@@ -6,10 +6,15 @@ import 'package:univolve_app/assets/univolve_icons_icons.dart';
 import 'package:univolve_app/pages/assetUIElements/drawer.dart';
 import 'package:univolve_app/pages/eventspage.dart';
 import 'package:univolve_app/pages/profile_page.dart';
+import 'package:univolve_app/pages/chat_screen.dart';
+import 'package:univolve_app/pages/services/chat_services.dart';
+
 
 class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
+  final ChatService _chatService = ChatService();
+  
 }
 
 class _HomePageState extends State<HomePage> {
@@ -25,6 +30,8 @@ class _HomePageState extends State<HomePage> {
     userDetail = user?.email;
     fetchUserName();
 
+  // Call the method to log usersCollection details
+  logUsersCollectionDetails();
     super.initState();
   }
 
@@ -33,6 +40,33 @@ class _HomePageState extends State<HomePage> {
     final user = FirebaseAuth.instance.currentUser;
     return user?.email ?? "Not signed in";
   }
+
+  void logUsersCollectionDetails() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    final usersCollection = FirebaseFirestore.instance.collection('users');
+
+    // Log the details of the usersCollection
+    print('Details of usersCollection:');
+    print('Path: ${usersCollection.path}');
+    print('Collection ID: ${usersCollection.id}');
+
+    // Fetch and log documents within the collection
+    final querySnapshot = await usersCollection.get();
+    if (querySnapshot.docs.isNotEmpty) {
+      print('Documents in the collection:');
+      querySnapshot.docs.forEach((doc) {
+        print('${doc.id}: ${doc.data()}');
+      });
+    } else {
+      print('No documents found in the collection.');
+    }
+  } else {
+    print('User is not signed in.');
+  }
+}
+
+
 
   void fetchUserName() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -71,20 +105,7 @@ class _HomePageState extends State<HomePage> {
 
   //list of pages
   late final List<Widget> _pages = <Widget>[
-    Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text('Welcome to the chat page'),
-          MaterialButton(
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-            },
-            child: Text('Sign Out'),
-          ),
-        ],
-      ),
-    ),
+   ChatScreen(),
     Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -195,3 +216,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
